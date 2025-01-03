@@ -17,4 +17,6 @@ public interface UserService {
     User addUser(UserDTO userDTO);
 
     User findUserProfile( String email) throws UserException;
+
+    User findUserByEmail(String email) throws UserException;
 }

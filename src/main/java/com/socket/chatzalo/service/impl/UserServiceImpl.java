@@ -1,5 +1,6 @@
 package com.socket.chatzalo.service.impl;
 
+import com.socket.chatzalo.enums.RoleEnum;
 import model.dto.UserDTO;
 import com.socket.chatzalo.entities.User;
 import com.socket.chatzalo.exception.UserException;
@@ -51,6 +52,7 @@ public class UserServiceImpl implements UserService {
         user.setFullName(fullName);
         user.setEmail(email);
         user.setPassword(password);
+        user.setRole( RoleEnum.USER );
 
         userRepository.save(user);
         return user;
@@ -65,5 +67,14 @@ public class UserServiceImpl implements UserService {
 
         return user;
 
+    }
+
+    @Override
+    public User findUserByEmail(String email) throws UserException {
+        User user = userRepository.findByEmail(email);
+        if ( user == null ){
+            throw new UserException("User not found with email " + email);
+        }
+        return user;
     }
 }

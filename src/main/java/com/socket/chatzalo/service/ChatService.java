@@ -12,7 +12,7 @@ public interface ChatService {
 
     Chat createChat(Long reqUserId, Long userId2) throws UserException;
 
-    Chat findChatById(Long chatId) throws ChatException;
+    Chat findChatById(Long chatId, Long userId) throws ChatException;
 
     List<Chat> findAllChatByUserId(Long userId) throws UserException;
 
@@ -24,5 +24,5 @@ public interface ChatService {
 
     Chat removeFromGroup(Long chatId, Long userId, Long reqUserId) throws UserException, ChatException;
 
-    Chat deleteChat(Long chatId, Long reqUserId) throws UserException, ChatException;
+    void deleteChat(Long chatId, Long reqUserId) throws UserException, ChatException;
 }

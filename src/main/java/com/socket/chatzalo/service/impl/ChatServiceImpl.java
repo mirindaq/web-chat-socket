@@ -5,18 +5,14 @@ import com.socket.chatzalo.entities.User;
 import com.socket.chatzalo.exception.ChatException;
 import com.socket.chatzalo.exception.UserException;
 import com.socket.chatzalo.repository.ChatRepository;
-import com.socket.chatzalo.repository.UserRepository;
 import com.socket.chatzalo.service.ChatService;
 import com.socket.chatzalo.service.UserService;
 import lombok.RequiredArgsConstructor;
 import model.request.GroupChatRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
-import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
-import java.util.Set;
 
 @Service
 @RequiredArgsConstructor
@@ -45,9 +41,15 @@ public class ChatServiceImpl implements ChatService {
     }
 
     @Override
-    public Chat findChatById(Long chatId) throws ChatException {
+    public Chat findChatById(Long chatId, Long userId) throws ChatException {
+        User userRequest = userService.findUserById(userId);
         Optional<Chat> chat = chatRepository.findById(chatId);
-        if (chat.isPresent()) return chat.get();
+        if (chat.isPresent()) {
+            if ( chat.get().getUsers().contains(userRequest) || chat.get().getAdmins().contains(userRequest)) {
+                return chat.get();
+            }
+            else throw new UserException("User have this Chat with Id " + chatId);
+        }
         else throw new ChatException("Chat not found");
     }
 
@@ -111,16 +113,43 @@ public class ChatServiceImpl implements ChatService {
             }
             else throw new UserException("User not have permission");
         }
-        else throw new ChatException("User not found");
+        else throw new ChatException("Chat not found");
     }
 
     @Override
     public Chat removeFromGroup(Long chatId, Long userId, Long reqUserId) throws UserException, ChatException {
+        User userRequest = userService.findUserById(reqUserId);
+        User userTarget = userService.findUserById(userId);
+
+        Optional<Chat> optionalChat = chatRepository.findById(chatId);
+        if (optionalChat.isPresent()){
+            Chat chat = optionalChat.get();
+            if ( chat.getAdmins().contains(userRequest) ){
+                chat.getUsers().remove(userTarget);
+                return chatRepository.save(chat);
+            }
+            else if ( chat.getUsers().contains(userTarget) ){
+                if (userRequest.getId().equals(userTarget.getId()) ){
+                    chat.getUsers().remove(userTarget);
+                    return chatRepository.save(chat);
+                }
+            }
+            else throw new UserException("User not have permission to remove " + userTarget.getFullName());
+        }
+        else throw new ChatException("Chat not found");
         return null;
     }
 
     @Override
-    public Chat deleteChat(Long chatId, Long reqUserId) throws UserException, ChatException {
-        return null;
+    public void deleteChat(Long chatId, Long reqUserId) throws UserException, ChatException {
+        User userRequest = userService.findUserById(reqUserId);
+        Optional<Chat> optionalChat = chatRepository.findById(chatId);
+        if (optionalChat.isPresent()){
+            Chat chat = optionalChat.get();
+            if ( chat.getAdmins().contains(userRequest) ){
+                chatRepository.delete(chat);
+            }
+        }
+        else throw new ChatException("Chat not found");
     }
 }

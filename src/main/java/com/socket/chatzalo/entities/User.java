@@ -1,5 +1,6 @@
 package com.socket.chatzalo.entities;
 
+import com.socket.chatzalo.enums.RoleEnum;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
@@ -17,11 +18,17 @@ public class User {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @Column
     private String fullName;
+    @Column
     private String email;
+    @Column
     private String profile_picture;
+    @Column
     private String password;
-    private String role;
+    @Column
+    @Enumerated(EnumType.STRING)
+    private RoleEnum role;
 
     @OneToMany( mappedBy = "user", cascade = CascadeType.ALL)
     private List<Notification> notifications = new ArrayList<Notification>();
